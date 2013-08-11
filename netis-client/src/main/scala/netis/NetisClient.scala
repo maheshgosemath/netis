@@ -43,7 +43,7 @@ object NetisClientApp extends App {
   if (sock.isOpen()) {
     sock.configureBlocking(true)
     val decoder = Charset.defaultCharset().newDecoder()
-    sock.write(ByteBuffer.wrap("hello world ".getBytes()))
+    sock.write(ByteBuffer.wrap("java".getBytes()))
     val buf = ByteBuffer.allocate(1024)
     while(sock.read(buf) != -1) {
       buf.flip()

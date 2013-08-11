@@ -25,18 +25,21 @@ object NetisServerCommons {
   }
 }
 
-class NetisRequestHandler extends ChannelInboundHandlerAdapter {
+class NetisRequestHandler(handler: String => String)
+  extends ChannelInboundHandlerAdapter {
+  import netis.NetisServerCommons._
   override def channelRead(ctx: ChannelHandlerContext, msg: Object) {
-    NetisServerCommons.resolveQueryString(msg)
-    ctx.writeAndFlush(ctx.alloc().buffer().writeBytes("java".getBytes()))
+    ctx.writeAndFlush(ctx.alloc().buffer().writeBytes(
+      handler(resolveQueryString(msg)).getBytes()))
   }
 }
 
 object NetisServer {
-  def apply(port: Int) = new NetisServer(host = "localhost", port)
+  def apply(port: Int, handlr: String => String) =
+    new NetisServer(host = "localhost", port, handlr)
 }
 
-class NetisServer(host: String, port: Int) {
+class NetisServer(host: String, port: Int, handlr: String => String) {
 
   val boss = new NioEventLoopGroup
   val worker = new NioEventLoopGroup
@@ -46,12 +49,13 @@ class NetisServer(host: String, port: Int) {
     .channel(classOf[NioServerSocketChannel])
     .childHandler(new ChannelInitializer[SocketChannel]() {
       override def initChannel(chnnel: SocketChannel) {
-        chnnel.pipeline().addLast(new NetisRequestHandler())
+        chnnel.pipeline().addLast(new NetisRequestHandler(handlr))
       }
     })
 
   def run = {
     try {
+      println("Netis running on " + host + " @port " + port + " ... ")
       val bootstrap = serverBootStrap.bind(
         new InetSocketAddress(host, port)).sync().channel()
       bootstrap.closeFuture().sync()
