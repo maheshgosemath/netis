@@ -47,8 +47,8 @@ class NetisEchoServer {
 
   def run = {
     try {
-      val bootstrav = serverBootStrap.bind(port).sync().channel()
-      bootstrav.closeFuture().sync()
+      val bootstrap = serverBootStrap.bind(port).sync().channel()
+      bootstrap.closeFuture().sync()
     } finally {
       stop
     }
@@ -58,9 +58,4 @@ class NetisEchoServer {
     boss.shutdownGracefully()
     worker.shutdownGracefully()
   }
-}
-
-object EchoServerApp extends App {
-  val disc = new NetisEchoServer()
-  disc.run
 }
