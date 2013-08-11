@@ -11,6 +11,7 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.buffer.UnpooledUnsafeDirectByteBuf
 import io.netty.buffer.EmptyByteBuf
 import io.netty.handler.codec.marshalling.ChannelBufferByteOutput
+import java.net.InetSocketAddress
 
 object NetisServerCommons {
   val resolveQueryString = (msg: Object) => {
@@ -24,30 +25,35 @@ object NetisServerCommons {
   }
 }
 
-class NetisEchoServerHandler extends ChannelInboundHandlerAdapter {
+class NetisRequestHandler extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Object) {
     NetisServerCommons.resolveQueryString(msg)
     ctx.writeAndFlush(ctx.alloc().buffer().writeBytes("java".getBytes()))
   }
 }
 
-class NetisEchoServer {
-  val host = "localhost"
-  val port = 9090
+object NetisServer {
+  def apply(port: Int) = new NetisServer(host = "localhost", port)
+}
+
+class NetisServer(host: String, port: Int) {
+
   val boss = new NioEventLoopGroup
   val worker = new NioEventLoopGroup
+
   val serverBootStrap: ServerBootstrap = new ServerBootstrap()
     .group(boss, worker)
     .channel(classOf[NioServerSocketChannel])
     .childHandler(new ChannelInitializer[SocketChannel]() {
       override def initChannel(chnnel: SocketChannel) {
-        chnnel.pipeline().addLast(new NetisEchoServerHandler())
+        chnnel.pipeline().addLast(new NetisRequestHandler())
       }
     })
 
   def run = {
     try {
-      val bootstrap = serverBootStrap.bind(port).sync().channel()
+      val bootstrap = serverBootStrap.bind(
+        new InetSocketAddress(host, port)).sync().channel()
       bootstrap.closeFuture().sync()
     } finally {
       stop
