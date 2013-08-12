@@ -7,10 +7,12 @@ object NetisServerApp extends App {
   NetisServer(9090, (url, params) => {
     url match {
       case "java" => {
-        params("param1") + " > " + 
-        "returning java"
+        params("param1") + " > " +
+          "returning java"
       }
-      case "scala" => "returning scala"
+      case "scala" => {
+        "returning scala"
+      }
     }
   }).run
 

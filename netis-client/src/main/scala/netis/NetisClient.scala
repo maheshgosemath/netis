@@ -19,11 +19,16 @@ object NetisClientApp extends App {
     val decoder = Charset.defaultCharset().newDecoder()
     sock.write(ByteBuffer.wrap("java/param1=1".getBytes()))
     val buf = ByteBuffer.allocate(1024)
-    while (sock.read(buf) != -1) {
-      buf.flip()
-      println(" " + decoder.decode(buf).toString())
-      buf.clear()
+    println(iter(""))
+    def iter(str: String): String = {
+      val x = sock.read(buf)
+      if (x != 0) {
+        buf.flip()
+        iter(decoder.decode(buf).toString())
+      } else {
+        sock.close()
+        str
+      }
     }
-    sock.close()
-  } 
+  }
 }
