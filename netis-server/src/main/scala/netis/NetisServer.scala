@@ -50,6 +50,9 @@ class NetisRequestHandler(handler: handlerDel)
 
   override def channelRead(ctx: ChannelHandlerContext, msg: Object) {
     val reqUrl = resolveQueryString(msg)
+    println(reqUrl)
+    println(obtainRequest(reqUrl))
+    println(obtainRequestParam(reqUrl))
     ctx.writeAndFlush(ctx.alloc().buffer().writeBytes(
       handler(obtainRequest(reqUrl), obtainRequestParam(reqUrl)).getBytes()))
   }
